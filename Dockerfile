@@ -1,5 +1,6 @@
 FROM centos:7
 MAINTAINER 'Jordan Wamser <jwamser@redpandacoding.com>'
+ARG DEV=1
 ENV DEV_SERVER=${DEV}
 
 # build centos commands
@@ -15,7 +16,7 @@ RUN yum install -y http://rpms.remirepo.net/enterprise/remi-release-7.rpm && \
 ### START INSTALL MSSQL ###
 RUN curl https://packages.microsoft.com/config/rhel/7/prod.repo > /etc/yum.repos.d/mssql-release.repo
 
-RUN ACCEPT_EULA=Y yum install -y msodbcsql unixODBC-devel 
+RUN ACCEPT_EULA=Y yum install -y msodbcsql unixODBC-devel
 ### FINISHED MSSQL INSTALL
 
 ### DEV > START INSTALL XDEBUG ###
