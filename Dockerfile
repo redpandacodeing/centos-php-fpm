@@ -1,6 +1,7 @@
 FROM centos:7
 MAINTAINER 'Jordan Wamser <jwamser@redpandacoding.com>'
 ARG DEV=1
+ARG FPM_PORT=9000
 ENV DEV_SERVER=${DEV}
 
 # build centos commands
@@ -48,6 +49,8 @@ RUN useradd -M -d /opt/app -s /bin/false nginx
 COPY ./php-fpm.conf /etc/php-fpm.conf
 COPY ./www.conf /etc/php-fpm.d/www.conf
 COPY ./ini/. /etc/.
+
+EXPOSE ${FPM_PORT}
 
 RUN yum clean all
 
