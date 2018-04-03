@@ -1,8 +1,8 @@
 FROM centos:7
 MAINTAINER 'Jordan Wamser <jwamser@redpandacoding.com>'
-ARG DEV=1
+ARG DEV='dev'
 ARG FPM_PORT=9000
-ENV DEV_SERVER=${DEV}
+ENV APP_ENV=${DEV}
 
 # build centos commands
 RUN yum update -y && \
@@ -21,13 +21,14 @@ RUN ACCEPT_EULA=Y yum install -y msodbcsql unixODBC-devel
 ### FINISHED MSSQL INSTALL
 
 ### DEV > START INSTALL XDEBUG ###
-RUN if [ -n "${DEV_SERVER}" ]; then \
+RUN if [ "${APP_ENV}" != "prod" ]; then \
           yum install -y php-xdebug; \
        fi
 ### DEV > FINISH INSTALL XDEBUG ###
 
 # install php and needed php modules && sqlsrv
 RUN yum install -y php-fpm \
+ php-zip \
  php-xml \
  php-cli \
  php-bcmath \
@@ -44,14 +45,22 @@ RUN yum install -y php-fpm \
  php-process \
  php-sqlsrv
 
-RUN useradd -M -d /opt/app -s /bin/false nginx
+RUN useradd -M -d /opt/app -s /bin/false nginx \
+    && mkdir /opt/app
 
 COPY ./php-fpm.conf /etc/php-fpm.conf
 COPY ./www.conf /etc/php-fpm.d/www.conf
 COPY ./ini/. /etc/.
+COPY ./start_php.sh /
 
 EXPOSE ${FPM_PORT}
 
+RUN curl -sS https://getcomposer.org/installer | \
+    php -- --install-dir=/usr/bin/ --filename=composer
+
+RUN chown -R -v root:nginx /var/lib/php \
+    && chown -R -v root:nginx /opt/app
+
 RUN yum clean all
 
-CMD php-fpm
+CMD sh /start_php.sh
